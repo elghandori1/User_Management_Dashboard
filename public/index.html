@@ -14,110 +14,18 @@
             <h2>Menu</h2>
             <ul id="menu">
                 <li class="menu-item" onclick="ShowListUsers()">📋 Lists of Users</li>
-                <li class="menu-item">➕ Add New User</li>
+                <li class="menu-item" onclick="AddNewUser()">➕ Add New User</li>
             </ul>
         </div>
         <div class="details">
             <div class="details-header">
                 <h2>Details</h2>
-                <div><input type="text" placeholder="filter with ID"></div>
+                <div><input type="number" placeholder="filter with ID"></div>
             </div>
-
             <hr>
             <p class="placeholder">Select an option from the menu to display content.</p>
-
         </div>
     </div>
-
-    <script>
-        function ShowListUsers() {
-            if (document.querySelector(".user-table")) {
-                return;
-            }
-            const detailsParent = document.querySelector(".details");
-            const placeholder = document.querySelector(".placeholder");
-
-            if (placeholder) {
-                detailsParent.removeChild(placeholder);
-            }
-
-            // Create table element
-            const table = document.createElement('table');
-            table.classList.add("user-table");
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
-            table.style.marginTop = '20px';
-
-            // Table styles
-            const styleCell = cell => {
-                cell.style.border = '1px solid #ccc';
-                cell.style.padding = '8px';
-                cell.style.textAlign = 'left';
-            };
-
-            // Create table header
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            ['ID', 'NAME', 'SALARY', 'ACTION'].forEach(headerText => {
-                const th = document.createElement('th');
-                th.textContent = headerText;
-                styleCell(th);
-                th.style.backgroundColor = '#333';
-                th.style.color = '#fff';
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // Create table body with data
-            const tbody = document.createElement('tbody');
-            fetch('/users')
-                .then(response => response.json())
-                .then(users => {
-                    users.forEach(user => {
-                        const row = document.createElement('tr');
-                        const idCell = document.createElement('td');
-                        idCell.style.textAlign ='center';
-                        idCell.textContent = user.id;
-                        styleCell(idCell);
-                        row.appendChild(idCell);
-
-                        const nameCell = document.createElement('td');
-                        nameCell.textContent = user.name;
-                        styleCell(nameCell);
-                        row.appendChild(nameCell);
-
-                        const salaryCell = document.createElement('td');
-                        salaryCell.textContent = user.salary;
-                        styleCell(salaryCell);
-                        row.appendChild(salaryCell);
-
-                        const actionCell = document.createElement('td');
-                        actionCell.innerHTML = `
-                        <button>Delete</button>
-                        <button>Update</button>
-                        `;
-                        styleCell(actionCell);
-                        row.appendChild(actionCell);
-
-                        tbody.appendChild(row);
-                    });
-                    table.appendChild(tbody);
-                    detailsParent.appendChild(table);
-                }).catch(error => {
-                    if(document.querySelector(".user-catchErr")){
-                        return;
-                    }
-                    const errorMsg = document.createElement('p');
-                    errorMsg.textContent = "Error fetching users.";
-                    errorMsg.classList.add("user-catchErr");
-                    errorMsg.style.color = "red";
-                    detailsParent.appendChild(errorMsg);
-                    console.error(error);
-                });
-        }
-    </script>
-
+    <script src="./script.js"></script>
 </body>
-
 </html>
