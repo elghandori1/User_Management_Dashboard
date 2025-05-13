@@ -2,16 +2,11 @@
     {
         "id": 1,
         "name": "John Doe",
-        "salary": 50000
+        "salary": 49988
     },
     {
         "id": 2,
-        "name": "Jane Smith",
-        "salary": 60000
-    },
-    {
-        "id": 3,
-        "name": "Bob Johnson",
-        "salary": 55000
+        "name": "mohammed",
+        "salary": 1113
     }
 ]

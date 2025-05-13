@@ -1,14 +1,30 @@
 // app.js
-const { error } = require('console');
 const express = require('express');
 const fs = require('fs');
-const app = express();
 const path = require('path');
 
+const app = express();
 
-// Read the JSON file
-const rawData = fs.readFileSync('data.json');
-const users = JSON.parse(rawData);
+const dataFilePath = path.join(__dirname, 'data.json');
+let users = [];
+
+try {
+    const rawData = fs.readFileSync(dataFilePath, 'utf8');
+    users = JSON.parse(rawData);
+} catch (err) {
+    console.error('Error loading data from data.json:', err);
+}
+
+function saveUsersToFile(callback) {
+    fs.writeFile(dataFilePath, JSON.stringify(users, null, 4), 'utf8', (err) => {
+        if (err) {
+            console.error('Error writing data.json:', err);
+        }
+        if (callback) {
+            callback(err);
+        }
+    });
+}
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -29,22 +45,55 @@ app.post('/AddNewUser', (req, res)=>{
     const newUser = {
         id: users.length + 1,
         name: req.body.name,
-        salary: req.body.salary
+        salary: Number(req.body.salary) 
     };
 
     users.push(newUser);
-    res.status(201).json({ message: 'User added successfully'});
+    saveUsersToFile((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error saving user data after add' });
+        }
+        res.status(201).json({ message: 'User added successfully'});
+    });
 });
 
 app.delete('/DeleteUser/:id',(req,res)=>{
     const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+    }
     const findUserIndex = users.findIndex((x)=>x.id === Number(id));
 
     if (findUserIndex === -1) {
         return res.status(404).json({ error: "User not found" });
     }
-    users.splice(findUserIndex, 1);
-    res.status(200).json({ message: 'User deleted successfully'});
+    users.splice(findUserIndex, 1)[0];
+    saveUsersToFile((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error saving user data after delete' });
+        }
+        res.status(200).json({ message: 'User deleted successfully'});
+    });
+});
+
+app.put('/UpdateUser/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const { name, salary } = req.body;
+    const index = users.findIndex(user => user.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: "User not found" });
+    }
+
+    users[index].name = name;
+    users[index].salary = salary;
+    saveUsersToFile((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error saving user data after update' });
+        }
+        res.status(200).json({ message: "User updated successfully" });
+    });
+  
 });
 
 // Start the server
