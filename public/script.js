@@ -237,6 +237,7 @@ function DeleteUser(id) {
                 setTimeout(() => {
                     alertBox.classList.add('hidden');
                 }, 3000);
+                ShowListUsers();
            }
         })
         .catch(error => {
