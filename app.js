@@ -1,4 +1,5 @@
 // app.js
+const { error } = require('console');
 const express = require('express');
 const fs = require('fs');
 const app = express();
@@ -22,9 +23,8 @@ app.get('/users', (req, res) => {
 });
 
 app.post('/AddNewUser', (req, res)=>{
-
     if (!req.body.name || !req.body.salary) {
-        return res.status(400).send('Name  and Salary is required');
+        return res.status(400).json({error:'Name and Salary is required'});
     }
     const newUser = {
         id: users.length + 1,
@@ -35,6 +35,18 @@ app.post('/AddNewUser', (req, res)=>{
     users.push(newUser);
     res.status(201).json({ message: 'User added successfully'});
 });
+
+app.delete('/DeleteUser/:id',(req,res)=>{
+    const id = parseInt(req.params.id);
+    const findUserIndex = users.findIndex((x)=>x.id === Number(id));
+
+    if (findUserIndex === -1) {
+        return res.status(404).json({ error: "User not found" });
+    }
+    users.splice(findUserIndex, 1);
+    res.status(200).json({ message: 'User deleted successfully'});
+});
+
 // Start the server
 const port = 3000;
 app.listen(port, () => {
