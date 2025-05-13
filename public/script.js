@@ -71,11 +71,22 @@ function ShowListUsers() {
                 row.appendChild(salaryCell);
 
                 const actionCell = document.createElement('td');
-                actionCell.innerHTML = `
-                <button>Delete</button>
-                <button>Update</button>
-                `;
+
                 styleCell(actionCell);
+                // Create Delete Button
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', () => {
+                    DeleteUser(user.id);
+                });
+
+                // Create Update Button
+                const updateButton = document.createElement('button');
+                updateButton.textContent = 'Update';
+
+                actionCell.appendChild(deleteButton);
+                actionCell.appendChild(updateButton);
+
                 row.appendChild(actionCell);
 
                 tbody.appendChild(row);
@@ -199,4 +210,26 @@ function AddNewUser() {
                 alert("Something went wrong.");
             });
     });
+}
+
+function DeleteUser(id) {
+    if (confirm('Are you sure you want to delete this user?')) {
+        fetch(`/DeleteUser/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error deleting user');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.message);
+            ShowListUsers();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Something went wrong while deleting the user.');
+        });
+    }
 }
