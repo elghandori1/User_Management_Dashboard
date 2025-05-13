@@ -2,7 +2,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #2a0050, #521c4b);
+    background: linear-gradient(135deg, #4c0788, #5a1851);
     color: #f0f0f0;
     display: flex;
     justify-content: center;
@@ -72,12 +72,20 @@ body {
     font-size: 24px;
 }
 
-.details input[type="number"] {
+.details #filter{
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #888;
     outline: none;
     width: 200px;
+}
+
+.details .inputUpdate{
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #888;
+    outline: none;
+    width: 100px;
 }
 
 .placeholder {
@@ -127,7 +135,8 @@ body {
 }
 
 .user-table button:first-child {
-    background-color: #d32f2f; /* Delete */
+    background-color: #d32f2f;
+    /* Delete */
 }
 
 .user-table button:first-child:hover {
@@ -135,7 +144,8 @@ body {
 }
 
 .user-table button:last-child {
-    background-color: #1976d2; /* Update */
+    background-color: #1976d2;
+    /* Update */
 }
 
 .user-table button:last-child:hover {
@@ -160,7 +170,8 @@ form label {
     font-weight: 500;
 }
 
-form #salary , form #name {
+form #salary,
+form #name {
     width: 90%;
     padding: 10px;
     border: 1px solid #444;
@@ -172,7 +183,8 @@ form #salary , form #name {
     transition: border-color 0.3s;
 }
 
-form #salary:focus,form #name:focus {
+form #salary:focus,
+form #name:focus {
     border-color: #6a00ff;
 }
 
@@ -193,10 +205,52 @@ form button:hover {
     background-color: #4b00b5;
 }
 
-.notification{
+.alert-adding {
+    position: fixed;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-left: 6px solid #2e7d32;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 400px;
+    min-width: 250px;
+    padding: 15px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 400px;
+    min-width: 250px;
+    padding: 15px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.alert.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+}
+
+.alert.error {
     background-color: #ffebee;
     color: #c62828;
-    padding: 10px;
     border-left: 4px solid #c62828;
-    border-radius: 6px;
+}
+
+.alert.hidden {
+    opacity: 0;
+    pointer-events: none;
 }

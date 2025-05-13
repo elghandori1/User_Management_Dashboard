@@ -7,7 +7,7 @@ function ShowListUsers() {
     header.classList.add("details-header");
     header.innerHTML = `
         <h2>Details</h2>
-        <div><input type="number" placeholder="filter with ID"></div>
+        <div><input type="number" id="filter" placeholder="filter with ID"></div>
     `;
     detailsParent.appendChild(header);
 
@@ -55,7 +55,6 @@ function ShowListUsers() {
             users.forEach(user => {
                 const row = document.createElement('tr');
                 const idCell = document.createElement('td');
-                idCell.style.textAlign = 'center';
                 idCell.textContent = user.id;
                 styleCell(idCell);
                 row.appendChild(idCell);
@@ -83,12 +82,17 @@ function ShowListUsers() {
                 // Create Update Button
                 const updateButton = document.createElement('button');
                 updateButton.textContent = 'Update';
+                updateButton.addEventListener('click',()=>{
+                    if(document.querySelector(".inputUpdate")){
+                        return;
+                    }
+                    UpdateUser(user);
+                })
 
                 actionCell.appendChild(deleteButton);
                 actionCell.appendChild(updateButton);
 
                 row.appendChild(actionCell);
-
                 tbody.appendChild(row);
             });
             table.appendChild(tbody);
@@ -106,6 +110,7 @@ function ShowListUsers() {
         });
 }
 
+
 function AddNewUser() {
     const detailsParent = document.querySelector(".details");
     detailsParent.innerHTML = '';
@@ -114,7 +119,7 @@ function AddNewUser() {
     header.classList.add("details-header");
     header.innerHTML = `
         <h2>Details</h2>
-        <div><input type="number" placeholder="filter with ID"></div>
+        <div><input type="number" id="filter" placeholder="filter with ID"></div>
     `;
     detailsParent.appendChild(header);
     const hr = document.createElement("hr");
@@ -190,8 +195,8 @@ function AddNewUser() {
             .then(response => response.json())
             .then(data => {
                 const alertmsg = document.createElement('p');
-                alertmsg.classList.add('notification');
-                if (!document.querySelector(".notification")) {
+                alertmsg.classList.add('alert-adding');
+                if (!document.querySelector(".alert-adding")) {
                     alertmsg.innerText = data.message;
                     form.appendChild(alertmsg);
                     nameInput.readOnly = true;
@@ -207,7 +212,7 @@ function AddNewUser() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert("Something went wrong.");
+                showAlert("Something went wrong.", "error");
             });
     });
 }
@@ -224,12 +229,95 @@ function DeleteUser(id) {
             return response.json();
         })
         .then(data => {
-            alert(data.message);
-            ShowListUsers();
+            const alertBox = document.getElementById('alert-box');
+            if (alertBox) {
+                alertBox.textContent = data.message;
+                alertBox.className="alert success";
+                alertBox.classList.remove('hidden');
+                setTimeout(() => {
+                    alertBox.classList.add('hidden');
+                }, 3000);
+                ShowListUsers();
+           }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Something went wrong while deleting the user.');
+            alert("Something went wrong while deleting the user.");
         });
     }
+}
+
+function UpdateUser(user) {
+    const row = [...document.querySelectorAll("tr")].find(
+        tr => tr.firstChild.textContent == user.id
+    );
+
+    if (!row) return;
+
+    const nameCell = row.children[1];
+    const salaryCell = row.children[2];
+    const actionCell = row.children[3];
+
+    // Store original values
+    const originalName = user.name;
+    const originalSalary = user.salary;
+
+    // Replace name and salary cells with input fields
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.classList.add("inputUpdate");
+    nameInput.value = originalName;
+    nameCell.innerHTML = '';
+    nameCell.appendChild(nameInput);
+
+    const salaryInput = document.createElement("input");
+    salaryInput.type = "number";
+    salaryInput.classList.add("inputUpdate");
+    salaryInput.value = originalSalary;
+    salaryCell.innerHTML = '';
+    salaryCell.appendChild(salaryInput);
+
+    // Change "Update" button to "Save"
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "Save";
+    saveButton.style.backgroundColor="#016b21";
+    saveButton.addEventListener("click", () => {
+        const updatedUser = {
+            id: user.id,
+            name: nameInput.value.trim(),
+            salary: Number(salaryInput.value)
+        };
+
+        fetch(`/UpdateUser/${user.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedUser)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to update user");
+            return res.json();
+        })
+        .then(data => {
+            const alertBox = document.getElementById('alert-box');
+            if (alertBox) {
+                alertBox.textContent = data.message;
+                alertBox.className="alert success";
+                alertBox.classList.remove('hidden');
+                setTimeout(() => {
+                    alertBox.classList.add('hidden');
+                }, 3000);
+                ShowListUsers();
+           }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Update failed.");
+        });
+    });
+
+    // Replace current buttons with Save button
+    actionCell.innerHTML = '';
+    actionCell.appendChild(saveButton);
 }
