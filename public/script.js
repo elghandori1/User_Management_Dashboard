@@ -1,45 +1,34 @@
+let allUsers = [];
 
 function ShowListUsers() {
     const detailsParent = document.querySelector(".details");
     detailsParent.innerHTML = '';
 
+    // Header and filter input
     const header = document.createElement("div");
     header.classList.add("details-header");
     header.innerHTML = `
         <h2>Details</h2>
-        <div><input type="number" id="filter" placeholder="filter with ID"></div>
+        <div><input type="text" id="filter" placeholder="Filter by Name"></div>
     `;
     detailsParent.appendChild(header);
+    detailsParent.appendChild(document.createElement("hr"));
 
-    const hr = document.createElement("hr");
-    detailsParent.appendChild(hr);
-
-    const placeholder = document.querySelector(".placeholder");
-    if (placeholder) {
-        detailsParent.removeChild(placeholder);
-    }
-
-    // Create table element
+    // Table setup
     const table = document.createElement('table');
     table.classList.add("user-table");
     table.style.width = '100%';
     table.style.borderCollapse = 'collapse';
     table.style.marginTop = '20px';
 
-    // Table styles
-    const styleCell = cell => {
-        cell.style.border = '1px solid #ccc';
-        cell.style.padding = '8px';
-        cell.style.textAlign = 'left';
-    };
-
-    // Create table header
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    ['ID', 'NAME', 'SALARY', 'ACTION'].forEach(headerText => {
+    ['ID', 'NAME', 'SALARY', 'ACTION'].forEach(text => {
         const th = document.createElement('th');
-        th.textContent = headerText;
-        styleCell(th);
+        th.textContent = text;
+        th.style.border = '1px solid #ccc';
+        th.style.padding = '8px';
+        th.style.textAlign = 'left';
         th.style.backgroundColor = '#333';
         th.style.color = '#fff';
         headerRow.appendChild(th);
@@ -47,69 +36,178 @@ function ShowListUsers() {
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    // Create table body with data
     const tbody = document.createElement('tbody');
-    fetch('/users')
-        .then(response => response.json())
-        .then(users => {
-            users.forEach(user => {
-                const row = document.createElement('tr');
-                const idCell = document.createElement('td');
-                idCell.textContent = user.id;
-                styleCell(idCell);
-                row.appendChild(idCell);
+    table.appendChild(tbody);
+    detailsParent.appendChild(table);
 
-                const nameCell = document.createElement('td');
-                nameCell.textContent = user.name;
-                styleCell(nameCell);
-                row.appendChild(nameCell);
+    // Styling helper
+    const styleCell = cell => {
+        cell.style.border = '1px solid #ccc';
+        cell.style.padding = '8px';
+        cell.style.textAlign = 'left';
+    };
 
-                const salaryCell = document.createElement('td');
-                salaryCell.textContent = user.salary;
-                styleCell(salaryCell);
-                row.appendChild(salaryCell);
+    // Render table
+    function renderUserTable(users) {
+        tbody.innerHTML = '';
+        if (users.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.textContent = "No users found.";
+            cell.style.textAlign = 'center';
+            styleCell(cell);
+            row.appendChild(cell);
+            tbody.appendChild(row);
+            return;
+        }
 
-                const actionCell = document.createElement('td');
+        users.forEach(user => {
+            const row = document.createElement('tr');
 
-                styleCell(actionCell);
-                // Create Delete Button
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.addEventListener('click', () => {
-                    DeleteUser(user.id);
-                });
+            const idCell = document.createElement('td');
+            idCell.textContent = user.id;
+            styleCell(idCell);
+            row.appendChild(idCell);
 
-                // Create Update Button
-                const updateButton = document.createElement('button');
-                updateButton.textContent = 'Update';
-                updateButton.addEventListener('click',()=>{
-                    if(document.querySelector(".inputUpdate")){
-                        return;
-                    }
-                    UpdateUser(user);
-                })
+            const nameCell = document.createElement('td');
+            nameCell.textContent = user.name;
+            styleCell(nameCell);
+            row.appendChild(nameCell);
 
-                actionCell.appendChild(deleteButton);
-                actionCell.appendChild(updateButton);
+            const salaryCell = document.createElement('td');
+            salaryCell.textContent = user.salary;
+            styleCell(salaryCell);
+            row.appendChild(salaryCell);
 
-                row.appendChild(actionCell);
-                tbody.appendChild(row);
+            const actionCell = document.createElement('td');
+            styleCell(actionCell);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => {
+                DeleteUser(user.id, deleteButton);
             });
-            table.appendChild(tbody);
-            detailsParent.appendChild(table);
-        }).catch(error => {
-            if (document.querySelector(".user-catchErr")) {
-                return;
+
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Update';
+            updateButton.addEventListener('click', () => {
+                if (!document.querySelector(".inputUpdate")) {
+                    UpdateUser(user);
+                }
+            });
+
+            actionCell.appendChild(deleteButton);
+            actionCell.appendChild(updateButton);
+            row.appendChild(actionCell);
+
+            tbody.appendChild(row);
+        });
+    }
+
+    fetch('/users')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(users => {
+            allUsers = users;
+            renderUserTable(allUsers);
+
+            const filterInput = document.getElementById('filter');
+            filterInput.addEventListener('input', () => {
+                const value = filterInput.value.toLowerCase();
+                const filtered = allUsers.filter(user =>
+                    user.name.toLowerCase().includes(value)
+                );
+                renderUserTable(filtered);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+            if (!document.querySelector(".user-catchErr")) {
+                const errorMsg = document.createElement('p');
+                errorMsg.textContent = "Error fetching users.";
+                errorMsg.classList.add("user-catchErr");
+                errorMsg.style.color = "red";
+                detailsParent.appendChild(errorMsg);
             }
-            const errorMsg = document.createElement('p');
-            errorMsg.textContent = "Error fetching users.";
-            errorMsg.classList.add("user-catchErr");
-            errorMsg.style.color = "red";
-            detailsParent.appendChild(errorMsg);
-            console.error(error);
         });
 }
 
+// Function to render the table with a specific list of users
+function renderUserTable(usersToDisplay) {
+    const tbody = document.querySelector(".user-table tbody");
+    if (!tbody) {
+        console.error("Table body not found!");
+        return;
+    }
+
+    tbody.innerHTML = '';
+
+    const styleCell = cell => {
+        cell.style.border = '1px solid #ccc';
+        cell.style.padding = '8px';
+        cell.style.textAlign = 'left';
+    };
+
+    // Populate table body with usersToDisplay
+    if (usersToDisplay && usersToDisplay.length > 0) {
+        usersToDisplay.forEach(user => {
+            const row = document.createElement('tr');
+            const idCell = document.createElement('td');
+            idCell.textContent = user.id;
+            styleCell(idCell);
+            row.appendChild(idCell);
+
+            const nameCell = document.createElement('td');
+            nameCell.textContent = user.name;
+            styleCell(nameCell);
+            row.appendChild(nameCell);
+
+            const salaryCell = document.createElement('td');
+            salaryCell.textContent = user.salary;
+            styleCell(salaryCell);
+            row.appendChild(salaryCell);
+
+            const actionCell = document.createElement('td');
+            styleCell(actionCell);
+
+            // Create Delete Button
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => {
+                //button element to the DeleteUser function
+                DeleteUser(user.id, deleteButton);
+            });
+
+            // Create Update Button
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Update';
+            updateButton.addEventListener('click',()=>{
+                // update forms from opening
+                if(document.querySelector(".inputUpdate")){
+                    return;
+                }
+                UpdateUser(user);
+            })
+
+            actionCell.append(deleteButton, updateButton);
+
+            row.appendChild(actionCell);
+            tbody.appendChild(row);
+        });
+    } else {
+        const noDataRow = document.createElement('tr');
+        const noDataCell = document.createElement('td');
+        noDataCell.colSpan = 4;
+        noDataCell.textContent = "No users found.";
+        noDataCell.style.textAlign = 'center';
+        styleCell(noDataCell);
+        noDataRow.appendChild(noDataCell);
+        tbody.appendChild(noDataRow);
+    }
+}
 
 function AddNewUser() {
     const detailsParent = document.querySelector(".details");
@@ -119,7 +217,7 @@ function AddNewUser() {
     header.classList.add("details-header");
     header.innerHTML = `
         <h2>Details</h2>
-        <div><input type="number" id="filter" placeholder="filter with ID"></div>
+        <div><input type="text" id="filter" placeholder="Filter by Name" readonly></div>
     `;
     detailsParent.appendChild(header);
     const hr = document.createElement("hr");
@@ -317,7 +415,6 @@ function UpdateUser(user) {
         });
     });
 
-    // Replace current buttons with Save button
     actionCell.innerHTML = '';
     actionCell.appendChild(saveButton);
 }
