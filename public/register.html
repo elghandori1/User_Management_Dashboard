@@ -1,0 +1,87 @@
+<!-- public/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
+  <style>
+    .alert {
+      padding: 10px;
+      margin: 10px 0;
+      display: none;
+      border-radius: 5px;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <form id="register-form">
+    <h2>Register</h2>
+    <input type="text" id="username" name="username" placeholder="Username" required><br>
+    <input type="password" id="password" name="password" placeholder="Password" required><br>
+    <button type="submit">Register</button>
+  </form>
+  
+  <div id="alert-box" class="alert"></div>
+
+  <p><a href="/login.html">Already have an account? Login</a></p>
+
+  <script>
+    const registerForm = document.getElementById('register-form');
+    const alertBox = document.getElementById('alert-box');
+
+    registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // Hide previous alerts
+      alertBox.style.display = 'none';
+      alertBox.className = 'alert';
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alertBox.textContent = result.message || 'Registration successful!';
+          alertBox.classList.add('alert-success');
+          alertBox.style.display = 'block';
+
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } else {
+          alertBox.textContent = result.message || 'Registration failed. Please try again.';
+          alertBox.classList.add('alert-danger');
+          alertBox.style.display = 'block';
+        }
+
+      } catch (error) {
+        console.error('Error during register fetch:', error);
+        alertBox.textContent = 'An unexpected error occurred. Please try again later.';
+        alertBox.classList.add('alert-danger');
+        alertBox.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

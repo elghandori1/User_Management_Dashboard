@@ -82,7 +82,7 @@ function renderUserTable(usersToDisplay) {
     const styleCell = cell => {
         cell.style.border = '1px solid #ccc';
         cell.style.padding = '8px';
-        cell.style.textAlign = 'centre';
+        cell.style.textAlign = 'center';
     };
 
     if (usersToDisplay && usersToDisplay.length > 0) {
@@ -105,7 +105,6 @@ function renderUserTable(usersToDisplay) {
 
             const actionCell = document.createElement('td');
             styleCell(actionCell);
-            actionCell.classList.add("centre-btns");
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
             deleteButton.classList.add("btn-delete");
