@@ -38,6 +38,23 @@ app.get('/users', (req, res) => {
     res.json(users);
 });
 
+app.get('/user/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const user = users.find(u => u.id === id);
+
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+});
+
+
 app.post('/AddNewUser', (req, res)=>{
     if (!req.body.name || !req.body.salary) {
         return res.status(400).json({error:'Name and Salary is required'});

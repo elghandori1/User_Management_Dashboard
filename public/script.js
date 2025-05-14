@@ -28,7 +28,7 @@ function ShowListUsers() {
         th.textContent = text;
         th.style.border = '1px solid #ccc';
         th.style.padding = '8px';
-        th.style.textAlign = 'left';
+        th.style.textAlign = 'centre';
         th.style.backgroundColor = '#333';
         th.style.color = '#fff';
         headerRow.appendChild(th);
@@ -39,71 +39,6 @@ function ShowListUsers() {
     const tbody = document.createElement('tbody');
     table.appendChild(tbody);
     detailsParent.appendChild(table);
-
-    // Styling helper
-    const styleCell = cell => {
-        cell.style.border = '1px solid #ccc';
-        cell.style.padding = '8px';
-        cell.style.textAlign = 'left';
-    };
-
-    // Render table
-    function renderUserTable(users) {
-        tbody.innerHTML = '';
-        if (users.length === 0) {
-            const row = document.createElement('tr');
-            const cell = document.createElement('td');
-            cell.colSpan = 4;
-            cell.textContent = "No users found.";
-            cell.style.textAlign = 'center';
-            styleCell(cell);
-            row.appendChild(cell);
-            tbody.appendChild(row);
-            return;
-        }
-
-        users.forEach(user => {
-            const row = document.createElement('tr');
-
-            const idCell = document.createElement('td');
-            idCell.textContent = user.id;
-            styleCell(idCell);
-            row.appendChild(idCell);
-
-            const nameCell = document.createElement('td');
-            nameCell.textContent = user.name;
-            styleCell(nameCell);
-            row.appendChild(nameCell);
-
-            const salaryCell = document.createElement('td');
-            salaryCell.textContent = user.salary;
-            styleCell(salaryCell);
-            row.appendChild(salaryCell);
-
-            const actionCell = document.createElement('td');
-            styleCell(actionCell);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.addEventListener('click', () => {
-                DeleteUser(user.id, deleteButton);
-            });
-
-            const updateButton = document.createElement('button');
-            updateButton.textContent = 'Update';
-            updateButton.addEventListener('click', () => {
-                if (!document.querySelector(".inputUpdate")) {
-                    UpdateUser(user);
-                }
-            });
-
-            actionCell.appendChild(deleteButton);
-            actionCell.appendChild(updateButton);
-            row.appendChild(actionCell);
-
-            tbody.appendChild(row);
-        });
-    }
 
     fetch('/users')
         .then(response => {
@@ -127,7 +62,7 @@ function ShowListUsers() {
             console.error('Error fetching users:', error);
             if (!document.querySelector(".user-catchErr")) {
                 const errorMsg = document.createElement('p');
-                errorMsg.textContent = "Error fetching users.";
+                errorMsg.textContent = "Error fetching users click on \'Lists of USers\'";
                 errorMsg.classList.add("user-catchErr");
                 errorMsg.style.color = "red";
                 detailsParent.appendChild(errorMsg);
@@ -135,7 +70,6 @@ function ShowListUsers() {
         });
 }
 
-// Function to render the table with a specific list of users
 function renderUserTable(usersToDisplay) {
     const tbody = document.querySelector(".user-table tbody");
     if (!tbody) {
@@ -148,10 +82,9 @@ function renderUserTable(usersToDisplay) {
     const styleCell = cell => {
         cell.style.border = '1px solid #ccc';
         cell.style.padding = '8px';
-        cell.style.textAlign = 'left';
+        cell.style.textAlign = 'centre';
     };
 
-    // Populate table body with usersToDisplay
     if (usersToDisplay && usersToDisplay.length > 0) {
         usersToDisplay.forEach(user => {
             const row = document.createElement('tr');
@@ -172,28 +105,29 @@ function renderUserTable(usersToDisplay) {
 
             const actionCell = document.createElement('td');
             styleCell(actionCell);
-
-            // Create Delete Button
+            actionCell.classList.add("centre-btns");
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
+            deleteButton.classList.add("btn-delete");
             deleteButton.addEventListener('click', () => {
-                //button element to the DeleteUser function
-                DeleteUser(user.id, deleteButton);
+                DeleteUser(user.id,deleteButton);
             });
 
-            // Create Update Button
             const updateButton = document.createElement('button');
             updateButton.textContent = 'Update';
-            updateButton.addEventListener('click',()=>{
-                // update forms from opening
-                if(document.querySelector(".inputUpdate")){
-                    return;
+            updateButton.classList.add("btn-update");
+            updateButton.addEventListener('click', () => {
+                if (!document.querySelector(".inputUpdate")) {
+                    UpdateUser(user);
                 }
-                UpdateUser(user);
-            })
-
-            actionCell.append(deleteButton, updateButton);
-
+            });
+            const infosButton = document.createElement('button');
+            infosButton.textContent = 'Infos';
+            infosButton.classList.add("btn-info");
+            infosButton.addEventListener('click', () => {
+                InfosUser(user.id);
+            });
+            actionCell.append(deleteButton, updateButton, infosButton);
             row.appendChild(actionCell);
             tbody.appendChild(row);
         });
@@ -315,8 +249,13 @@ function AddNewUser() {
     });
 }
 
-function DeleteUser(id) {
+let isDeleting = false;
+
+function DeleteUser(id,button)
+{
+    if (!isDeleting) {
     if (confirm('Are you sure you want to delete this user?')) {
+        isDeleting = true;
         fetch(`/DeleteUser/${id}`, {
             method: 'DELETE'
         })
@@ -334,6 +273,7 @@ function DeleteUser(id) {
                 alertBox.classList.remove('hidden');
                 setTimeout(() => {
                     alertBox.classList.add('hidden');
+                    isDeleting = false; 
                 }, 3000);
                 ShowListUsers();
            }
@@ -343,6 +283,7 @@ function DeleteUser(id) {
             alert("Something went wrong while deleting the user.");
         });
     }
+}
 }
 
 function UpdateUser(user) {
@@ -417,4 +358,55 @@ function UpdateUser(user) {
 
     actionCell.innerHTML = '';
     actionCell.appendChild(saveButton);
+}
+
+function InfosUser(id) {
+    fetch(`/user/${id}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch user details');
+            return response.json();
+        })
+        .then(user => {
+            displayUserCard(user);
+        })
+        .catch(err => {
+            console.error("Error fetching user info:", err);
+        });
+}
+
+function displayUserCard(user) {
+    let overlay = document.querySelector(".user-card-overlay");
+
+    if (overlay) {
+        overlay.remove();
+    }
+
+    overlay = document.createElement("div");
+    overlay.className = "user-card-overlay";
+
+    const card = document.createElement("div");
+    card.className = "user-card";
+
+    const closeButton = document.createElement("button");
+    closeButton.className = "card-close-btn";
+    closeButton.textContent = "✖";
+    closeButton.onclick = () => {
+        overlay.remove();
+    };
+
+    // Card content
+    card.innerHTML = `
+        <h3>User Info</h3>
+        <hr>
+        <p><strong>ID:</strong> ${user.id}</p>
+        <p><strong>Name:</strong> ${user.name}</p>
+        <p><strong>Salary:</strong> ${user.salary}</p>
+        <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
+        <p><strong>Department:</strong> ${user.department || 'N/A'}</p>
+    `;
+
+    card.appendChild(closeButton);
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
 }
